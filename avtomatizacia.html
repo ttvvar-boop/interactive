@@ -1,0 +1,536 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>Подбор инструментов автоматизации — Промбезопасность</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background-color: #dfe4ea;
+            font-family: 'Segoe UI', 'Inter', system-ui, -apple-system, 'Roboto', sans-serif;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            padding: 2rem 1.5rem;
+        }
+
+        .app-container {
+            max-width: 1300px;
+            width: 100%;
+            background-color: #dfe4ea;
+            border-radius: 2rem;
+            position: relative;
+        }
+
+        /* шапка: только заголовок по центру */
+        .header {
+            text-align: center;
+            margin-bottom: 3rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid rgba(25, 63, 148, 0.2);
+        }
+
+        .main-title {
+            color: #193f94;
+            font-size: 2rem;
+            font-weight: 600;
+            letter-spacing: -0.3px;
+            word-break: break-word;
+        }
+
+        /* панель вопросов (форма) */
+        .questions-panel {
+            background: transparent;
+            max-width: 750px;
+            margin: 0 auto;
+            padding: 1rem 0 2rem 0;
+            transition: all 0.2s;
+        }
+
+        .question-block {
+            margin-bottom: 2rem;
+            display: flex;
+            flex-wrap: wrap;
+            align-items: baseline;
+            gap: 1rem;
+            padding: 0.5rem 0;
+        }
+
+        .question-label {
+            font-size: 1.2rem;
+            font-weight: 500;
+            color: #28353d;
+            min-width: 220px;
+            letter-spacing: -0.2px;
+        }
+
+        .custom-select {
+            flex: 1;
+            min-width: 260px;
+            background-color: #fafafa;
+            border: none;
+            border-radius: 60px;
+            padding: 0.85rem 1.5rem;
+            font-size: 1rem;
+            font-family: inherit;
+            color: #28353d;
+            font-weight: 500;
+            cursor: pointer;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.03);
+            transition: all 0.2s ease;
+            border: 1px solid #e2e8f0;
+            appearance: none;
+            background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='18' height='18' viewBox='0 0 24 24' fill='none' stroke='%2328353d' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><polyline points='6 9 12 15 18 9'></polyline></svg>");
+            background-repeat: no-repeat;
+            background-position: right 1.2rem center;
+        }
+
+        .custom-select:hover {
+            border-color: #a0d2f3;
+            background-color: #ffffff;
+        }
+
+        .custom-select:focus {
+            outline: none;
+            border-color: #193f94;
+            box-shadow: 0 0 0 3px rgba(25, 63, 148, 0.2);
+        }
+
+        /* кнопка получить */
+        .get-btn-wrapper {
+            display: flex;
+            justify-content: center;
+            margin-top: 2rem;
+            margin-bottom: 1rem;
+        }
+
+        .btn-get {
+            background-color: #a0d2f3;
+            border: none;
+            color: #28353d;
+            font-size: 1.2rem;
+            font-weight: 600;
+            padding: 0.9rem 2.5rem;
+            border-radius: 60px;
+            cursor: pointer;
+            font-family: inherit;
+            transition: all 0.2s;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+            border: 1px solid rgba(255,255,255,0.3);
+        }
+
+        .btn-get:hover {
+            background-color: #7fbde0;
+            transform: scale(1.01);
+            box-shadow: 0 8px 18px rgba(0, 0, 0, 0.1);
+        }
+
+        /* панель результатов */
+        .result-panel {
+            background: transparent;
+            margin-top: 1rem;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .result-header {
+            text-align: center;
+            font-size: 1.5rem;
+            font-weight: 500;
+            color: #193f94;
+            margin-bottom: 2rem;
+            background: rgba(255,255,245,0.6);
+            padding: 1rem;
+            border-radius: 48px;
+            backdrop-filter: blur(2px);
+        }
+
+        .tools-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            max-width: 900px;
+            margin: 0 auto 2rem auto;
+        }
+
+        .tool-card {
+            background: #fafafa;
+            border-radius: 28px;
+            padding: 1rem 1.5rem;
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1rem;
+            box-shadow: 0 3px 8px rgba(0, 0, 0, 0.05);
+            transition: all 0.2s;
+            border: 1px solid #eef2f6;
+        }
+
+        .tool-name {
+            font-size: 1.05rem;
+            font-weight: 500;
+            color: #28353d;
+            line-height: 1.4;
+            flex: 3;
+        }
+
+        .tool-link-btn {
+            background-color: #a0d2f3;
+            border: none;
+            padding: 0.55rem 1.5rem;
+            border-radius: 40px;
+            font-family: inherit;
+            font-weight: 600;
+            color: #28353d;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: 0.2s;
+            text-decoration: none;
+            display: inline-block;
+            text-align: center;
+        }
+
+        .tool-link-btn:hover {
+            background-color: #7fbde0;
+            transform: scale(0.97);
+        }
+
+        .restart-btn-wrapper {
+            display: flex;
+            justify-content: center;
+            margin-top: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .btn-restart {
+            background-color: #a0d2f3;
+            border: none;
+            color: #28353d;
+            font-size: 1.1rem;
+            font-weight: 600;
+            padding: 0.8rem 2rem;
+            border-radius: 60px;
+            cursor: pointer;
+            font-family: inherit;
+            transition: 0.2s;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+        }
+
+        .btn-restart:hover {
+            background-color: #86b6da;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px);}
+            to { opacity: 1; transform: translateY(0);}
+        }
+
+        /* адаптивность */
+        @media (max-width: 750px) {
+            body {
+                padding: 1rem;
+            }
+            .main-title {
+                font-size: 1.6rem;
+            }
+            .question-label {
+                min-width: 100%;
+                margin-bottom: 0.2rem;
+            }
+            .question-block {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            .custom-select {
+                width: 100%;
+            }
+            .tool-card {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            .tool-link-btn {
+                align-self: flex-start;
+            }
+        }
+
+        footer {
+            text-align: center;
+            font-size: 0.7rem;
+            color: #5b6e7c;
+            margin-top: 2rem;
+            opacity: 0.7;
+        }
+    </style>
+</head>
+<body>
+<div class="app-container">
+    <!-- ШАПКА: только заголовок по центру (логотип удалён) -->
+    <div class="header">
+        <h1 class="main-title">Подбор инструментов автоматизации</h1>
+    </div>
+
+    <!-- БЛОК ФОРМЫ (вопросы) -->
+    <div id="formSection" class="questions-panel">
+        <!-- 1. Что автоматизировать -->
+        <div class="question-block">
+            <span class="question-label">Что хотите автоматизировать</span>
+            <select id="automationSelect" class="custom-select">
+                <option value="" disabled selected>— Выберите вариант —</option>
+                <option value="Обучение и подготовка работников">Обучение и подготовка работников</option>
+                <option value="Документооборот">Документооборот</option>
+                <option value="Контроль сроков мероприятий">Контроль сроков мероприятий</option>
+                <option value="Планирование бюджета">Планирование бюджета</option>
+                <option value="Управление задачами службы ПБ">Управление задачами службы ПБ</option>
+            </select>
+        </div>
+
+        <!-- 2. Количество человек -->
+        <div class="question-block">
+            <span class="question-label">Количество человек в организации</span>
+            <select id="sizeSelect" class="custom-select">
+                <option value="" disabled selected>— Выберите диапазон —</option>
+                <option value="Менее 150">Менее 150</option>
+                <option value="От 150 до 500">От 150 до 500</option>
+                <option value="Более 500">Более 500</option>
+            </select>
+        </div>
+
+        <!-- 3. Отрасль -->
+        <div class="question-block">
+            <span class="question-label">Отрасль</span>
+            <select id="industrySelect" class="custom-select">
+                <option value="" disabled selected>— Выберите отрасль —</option>
+                <option value="Горнорудная и нерудная промышленность">Горнорудная и нерудная промышленность</option>
+                <option value="Металлургия и коксохимия">Металлургия и коксохимия</option>
+                <option value="Взрывчатые материалы промышленного назначения">Взрывчатые материалы промышленного назначения</option>
+                <option value="Химический комплекс">Химический комплекс</option>
+                <option value="Транспортирование опасных веществ">Транспортирование опасных веществ</option>
+                <option value="Оборонно-промышленный комплекс">Оборонно-промышленный комплекс</option>
+                <option value="Растительное сырье">Растительное сырье</option>
+                <option value="ОРПД">ОРПД</option>
+                <option value="Подъемные сооружения">Подъемные сооружения</option>
+                <option value="Нефтегазовый комплекс">Нефтегазовый комплекс</option>
+                <option value="Угольная промышленность">Угольная промышленность</option>
+            </select>
+        </div>
+
+        <!-- кнопка "Получить инструменты" (появляется после выбора всех трёх) -->
+        <div id="getButtonWrapper" class="get-btn-wrapper hidden">
+            <button id="getResultBtn" class="btn-get">Получить инструменты</button>
+        </div>
+    </div>
+
+    <!-- БЛОК РЕЗУЛЬТАТОВ (изначально скрыт) -->
+    <div id="resultSection" class="result-panel hidden">
+        <div class="result-header">Предлагаем проверенные инструменты, с которыми облегчите свои рабочие задачи</div>
+        <div id="toolsListContainer" class="tools-grid"></div>
+        <div class="restart-btn-wrapper">
+            <button id="restartBtn" class="btn-restart">Начать заново</button>
+        </div>
+    </div>
+    <footer>Актион Промбезопасность — цифровые решения</footer>
+</div>
+
+<script>
+    // --------------------------------------------------------------
+    // БАЗА ДАННЫХ ИНСТРУМЕНТОВ (строго по техзаданию)
+    // --------------------------------------------------------------
+
+    // Инструменты в зависимости от выбора "Что хотите автоматизировать"
+    const automationMap = {
+        "Обучение и подготовка работников": [
+            { name: "Сервис, чтобы запланировать все виды обучения по промышленной безопасности", link: "https://prombez.action360.ru/#/document/16/202384/" },
+            { name: "Чат-бот, чтобы определить особенности подготовки рабочих по промбезопасности для разных производств", link: "https://prombez.action360.ru/#/document/16/202927/" },
+            { name: "Планировщик, чтобы отслеживать сроки аттестации", link: "https://prombez.action360.ru/#/document/16/180866/" },
+            { name: "Тестировщик для подготовки к аттестации по промбезопасности", link: "https://prombez.action360.ru/#/document/16/182682/" },
+            { name: "Чат-бот по обучению электробезопасности", link: "https://prombez.action360.ru/#/document/16/137002/" },
+            { name: "Тестировщик для подготовки к аттестации по электробезопасности", link: "https://prombez.action360.ru/#/document/16/209913/" },
+            { name: "Сервис, чтобы определить кому и когда проходить инструктажи и обучение по пожарной безопасности", link: "https://prombez.action360.ru/?from=id2cabinet#/document/16/202202/" },
+            { name: "Чат-бот по требованиям к обучению действиям в случае аварии или инцидента на ОПО", link: "https://prombez.action360.ru/#/document/16/180363/" }
+        ],
+        "Документооборот": [
+            { name: "Нейропомощник для проверки документов по промбезопасности", link: "https://prombez.action360.ru/#/document/16/210150/" },
+            { name: "План работы по осуществлению производственного контроля", link: "https://prombez.action360.ru/#/document/16/194974/" },
+            { name: "Чат-бот, чтобы подобрать акты по промбезопасности", link: "https://prombez.action360.ru/#/document/16/202383/" }
+        ],
+        "Контроль сроков мероприятий": [
+            { name: "Календарь, чтобы составить график сдачи отчетов", link: "https://prombez.action360.ru/#/document/16/145652/" },
+            { name: "Планировщик, чтобы отслеживать сроки аттестации", link: "https://prombez.action360.ru/#/document/16/180866/" }
+        ],
+        "Планирование бюджета": [
+            { name: "Электронный планировщик бюджета по промбезопасности", link: "https://prombez.action360.ru/#/document/16/145556/" },
+            { name: "Расчетчик резерва финансовых средств для локализации и ликвидации последствий аварий", link: "https://prombez.action360.ru/#/document/16/126188/" }
+        ],
+        "Управление задачами службы ПБ": [
+            { name: "Расчетчик численности отдела промбезопасности", link: "https://prombez.action360.ru/#/document/16/126187/" },
+            { name: "Сервис, чтобы определить, какое образование и допуски должны быть у специалиста по промбезопасности", link: "https://prombez.action360.ru/#/document/16/202205/" },
+            { name: "Сервис, чтобы определить требования к специалистам по ПБ", link: "https://prombez.action360.ru/#/document/16/197450/" }
+        ]
+    };
+
+    // Инструмент по количеству человек (добавляется при любом выборе размера)
+    const sizeTool = {
+        name: "Сервис, чтобы верно сформировать структуру ПК",
+        link: "https://prombez.action360.ru/#/document/16/196012/"
+    };
+
+    // Инструменты по отраслям (только для Подъемные сооружения и ОРПД)
+    const industryToolsMap = {
+        "Подъемные сооружения": [
+            { name: "Чек-лист обязательных процедур при организации работы с ПС", link: "https://prombez.action360.ru/#/document/16/183452/" },
+            { name: "Чат-бот для определения признака опасности ОПО для ПС", link: "https://prombez.action360.ru/#/document/16/145560/" }
+        ],
+        "ОРПД": [
+            { name: "Расчетчик допустимого внутреннего давления сосуда", link: "https://prombez.action360.ru/#/document/16/126644/" },
+            { name: "Чат-бот, чтобы определить, нужно ли ставить ОРПД на учет", link: "https://prombez.action360.ru/#/document/16/145599/" },
+            { name: "Чат-бот, чтобы определить нужно ли ставить котел на учет", link: "https://prombez.action360.ru/#/document/16/145650/" },
+            { name: "Чат-бот для определения признака опасности ОПО для ОРПД", link: "https://prombez.action360.ru/#/document/16/145558/" }
+        ]
+    };
+
+    // ВСЕГДА добавляем "Автоматическое рабочее место"
+    const ALWAYS_TOOL = { name: "Автоматическое рабочее место", link: null };
+
+    // --------------------------------------------------------------
+    // СБОР ИНСТРУМЕНТОВ (уникальные по названию, порядок сохранен)
+    // --------------------------------------------------------------
+    function collectTools(automationValue, sizeValue, industryValue) {
+        const toolsMap = new Map(); // key = name, value = {name, link}
+
+        // 1) Всегда добавляем Автоматическое рабочее место
+        toolsMap.set(ALWAYS_TOOL.name, ALWAYS_TOOL);
+
+        // 2) Инструменты из выбранной категории автоматизации
+        if (automationValue && automationMap[automationValue]) {
+            automationMap[automationValue].forEach(tool => {
+                if (!toolsMap.has(tool.name)) toolsMap.set(tool.name, tool);
+            });
+        }
+
+        // 3) Инструмент по количеству сотрудников (если выбран любой размер)
+        if (sizeValue && (sizeValue === "Менее 150" || sizeValue === "От 150 до 500" || sizeValue === "Более 500")) {
+            if (!toolsMap.has(sizeTool.name)) toolsMap.set(sizeTool.name, sizeTool);
+        }
+
+        // 4) Отраслевые инструменты (если отрасль подходит)
+        if (industryValue && industryToolsMap[industryValue]) {
+            industryToolsMap[industryValue].forEach(tool => {
+                if (!toolsMap.has(tool.name)) toolsMap.set(tool.name, tool);
+            });
+        }
+
+        return Array.from(toolsMap.values());
+    }
+
+    // --------------------------------------------------------------
+    // ОТРИСОВКА РЕЗУЛЬТАТОВ
+    // --------------------------------------------------------------
+    function renderResults(toolsArray) {
+        const container = document.getElementById("toolsListContainer");
+        if (!container) return;
+        container.innerHTML = "";
+
+        if (!toolsArray.length) {
+            container.innerHTML = "<div class='tool-card'>Нет подходящих инструментов</div>";
+            return;
+        }
+
+        toolsArray.forEach(tool => {
+            const card = document.createElement("div");
+            card.className = "tool-card";
+
+            const toolNameSpan = document.createElement("div");
+            toolNameSpan.className = "tool-name";
+            toolNameSpan.textContent = tool.name;
+            card.appendChild(toolNameSpan);
+
+            if (tool.link && tool.link.trim() !== "") {
+                const linkBtn = document.createElement("a");
+                linkBtn.href = tool.link;
+                linkBtn.target = "_blank";
+                linkBtn.rel = "noopener noreferrer";
+                linkBtn.className = "tool-link-btn";
+                linkBtn.textContent = "Перейти";
+                card.appendChild(linkBtn);
+            } else {
+                // для "Автоматическое рабочее место" без ссылки - создаём неактивный элемент для выравнивания
+                const placeholder = document.createElement("span");
+                placeholder.style.width = "80px";
+                placeholder.style.display = "inline-block";
+                card.appendChild(placeholder);
+            }
+            container.appendChild(card);
+        });
+    }
+
+    // --------------------------------------------------------------
+    // УПРАВЛЕНИЕ ИНТЕРФЕЙСОМ
+    // --------------------------------------------------------------
+    const automationSelect = document.getElementById("automationSelect");
+    const sizeSelect = document.getElementById("sizeSelect");
+    const industrySelect = document.getElementById("industrySelect");
+    const getButtonWrapper = document.getElementById("getButtonWrapper");
+    const getResultBtn = document.getElementById("getResultBtn");
+    const formSection = document.getElementById("formSection");
+    const resultSection = document.getElementById("resultSection");
+
+    function checkAllSelected() {
+        const autoVal = automationSelect.value;
+        const sizeVal = sizeSelect.value;
+        const industryVal = industrySelect.value;
+        if (autoVal && sizeVal && industryVal) {
+            getButtonWrapper.classList.remove("hidden");
+        } else {
+            getButtonWrapper.classList.add("hidden");
+        }
+    }
+
+    function resetToForm() {
+        automationSelect.value = "";
+        sizeSelect.value = "";
+        industrySelect.value = "";
+        getButtonWrapper.classList.add("hidden");
+        formSection.classList.remove("hidden");
+        resultSection.classList.add("hidden");
+        document.getElementById("toolsListContainer").innerHTML = "";
+    }
+
+    function onGetTools() {
+        const automation = automationSelect.value;
+        const size = sizeSelect.value;
+        const industry = industrySelect.value;
+
+        if (!automation || !size || !industry) return;
+
+        const toolsList = collectTools(automation, size, industry);
+        renderResults(toolsList);
+
+        formSection.classList.add("hidden");
+        resultSection.classList.remove("hidden");
+    }
+
+    // Инициализация событий
+    function init() {
+        automationSelect.addEventListener("change", checkAllSelected);
+        sizeSelect.addEventListener("change", checkAllSelected);
+        industrySelect.addEventListener("change", checkAllSelected);
+        if (getResultBtn) getResultBtn.addEventListener("click", onGetTools);
+        const restartBtn = document.getElementById("restartBtn");
+        if (restartBtn) restartBtn.addEventListener("click", resetToForm);
+        resetToForm(); // чистое начальное состояние
+    }
+
+    init();
+</script>
+</body>
+</html>
