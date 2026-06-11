@@ -18,6 +18,7 @@
             display: flex;
             justify-content: center;
             padding: 2rem 1.5rem;
+            overflow-y: auto; /* обеспечивает вертикальный скролл всей страницы */
         }
 
         .app-container {
@@ -26,6 +27,7 @@
             background-color: #dfe4ea;
             border-radius: 2rem;
             position: relative;
+            transition: all 0.2s;
         }
 
         /* шапка: только заголовок по центру */
@@ -274,7 +276,7 @@
 </head>
 <body>
 <div class="app-container">
-    <!-- ШАПКА: только заголовок по центру (логотип удалён) -->
+    <!-- ШАПКА: только заголовок по центру -->
     <div class="header">
         <h1 class="main-title">Подбор инструментов автоматизации</h1>
     </div>
@@ -343,7 +345,7 @@
 
 <script>
     // --------------------------------------------------------------
-    // БАЗА ДАННЫХ ИНСТРУМЕНТОВ (строго по техзаданию)
+    // БАЗА ДАННЫХ ИНСТРУМЕНТОВ (строго по техзаданию, без "Автоматическое рабочее место")
     // --------------------------------------------------------------
 
     // Инструменты в зависимости от выбора "Что хотите автоматизировать"
@@ -398,31 +400,26 @@
         ]
     };
 
-    // ВСЕГДА добавляем "Автоматическое рабочее место"
-    const ALWAYS_TOOL = { name: "Автоматическое рабочее место", link: null };
-
     // --------------------------------------------------------------
     // СБОР ИНСТРУМЕНТОВ (уникальные по названию, порядок сохранен)
+    // Автоматическое рабочее место полностью удалено
     // --------------------------------------------------------------
     function collectTools(automationValue, sizeValue, industryValue) {
         const toolsMap = new Map(); // key = name, value = {name, link}
 
-        // 1) Всегда добавляем Автоматическое рабочее место
-        toolsMap.set(ALWAYS_TOOL.name, ALWAYS_TOOL);
-
-        // 2) Инструменты из выбранной категории автоматизации
+        // 1) Инструменты из выбранной категории автоматизации
         if (automationValue && automationMap[automationValue]) {
             automationMap[automationValue].forEach(tool => {
                 if (!toolsMap.has(tool.name)) toolsMap.set(tool.name, tool);
             });
         }
 
-        // 3) Инструмент по количеству сотрудников (если выбран любой размер)
+        // 2) Инструмент по количеству сотрудников (если выбран любой размер)
         if (sizeValue && (sizeValue === "Менее 150" || sizeValue === "От 150 до 500" || sizeValue === "Более 500")) {
             if (!toolsMap.has(sizeTool.name)) toolsMap.set(sizeTool.name, sizeTool);
         }
 
-        // 4) Отраслевые инструменты (если отрасль подходит)
+        // 3) Отраслевые инструменты (если отрасль подходит)
         if (industryValue && industryToolsMap[industryValue]) {
             industryToolsMap[industryValue].forEach(tool => {
                 if (!toolsMap.has(tool.name)) toolsMap.set(tool.name, tool);
@@ -462,19 +459,13 @@
                 linkBtn.className = "tool-link-btn";
                 linkBtn.textContent = "Перейти";
                 card.appendChild(linkBtn);
-            } else {
-                // для "Автоматическое рабочее место" без ссылки - создаём неактивный элемент для выравнивания
-                const placeholder = document.createElement("span");
-                placeholder.style.width = "80px";
-                placeholder.style.display = "inline-block";
-                card.appendChild(placeholder);
             }
             container.appendChild(card);
         });
     }
 
     // --------------------------------------------------------------
-    // УПРАВЛЕНИЕ ИНТЕРФЕЙСОМ
+    // УПРАВЛЕНИЕ ИНТЕРФЕЙСОМ + СКРОЛЛ-РЕСАЙЗЕР (плавная прокрутка)
     // --------------------------------------------------------------
     const automationSelect = document.getElementById("automationSelect");
     const sizeSelect = document.getElementById("sizeSelect");
@@ -495,6 +486,12 @@
         }
     }
 
+    // Прокрутка к элементу с плавностью (скролл-ресайзер)
+    function smoothScrollToElement(element) {
+        if (!element) return;
+        element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+
     function resetToForm() {
         automationSelect.value = "";
         sizeSelect.value = "";
@@ -503,6 +500,10 @@
         formSection.classList.remove("hidden");
         resultSection.classList.add("hidden");
         document.getElementById("toolsListContainer").innerHTML = "";
+        // Прокрутка вверх к началу формы
+        setTimeout(() => {
+            smoothScrollToElement(formSection);
+        }, 50);
     }
 
     function onGetTools() {
@@ -517,6 +518,11 @@
 
         formSection.classList.add("hidden");
         resultSection.classList.remove("hidden");
+        
+        // Автоматическая прокрутка к результатам (скролл-ресайзер)
+        setTimeout(() => {
+            smoothScrollToElement(resultSection);
+        }, 80);
     }
 
     // Инициализация событий
