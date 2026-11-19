@@ -1,0 +1,609 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Планировщик внедрения барьерной защиты</title>
+    <!-- Шрифт с сайта -->
+    <link href="https://fonts.googleapis.com/css2?family=PT+Sans:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #2196F3;
+            --primary-dark: #1976D2;
+            --surface-bg: #f8f9fa;
+            --surface-card: #ffffff;
+            --text-main: #495057;
+            --text-secondary: #6c757d;
+            --border-color: #dee2e6;
+            --gradient-start: #1fa2ff;
+            --gradient-end: #12d8fa;
+            --shadow-soft: 0 4px 12px rgba(0, 0, 0, 0.05);
+            --font-main: 'PT Sans', sans-serif;
+            --border-radius: 8px;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            background-color: var(--surface-bg);
+            color: var(--text-main);
+            font-family: var(--font-main);
+            margin: 0;
+            padding: 20px;
+            line-height: 1.5;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            min-height: 100vh;
+        }
+
+        /* Контейнер ограничен 800px и имеет внутренний скролл */
+        .container {
+            max-width: 800px;
+            width: 100%;
+            height: 85vh; /* Высота 85% от экрана */
+            overflow-y: auto; /* Включает вертикальный скролл */
+            padding: 24px;
+            background: #ffffff;
+            border-radius: 12px;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.08);
+        }
+
+        /* Стилизация скроллбара */
+        .container::-webkit-scrollbar {
+            width: 6px;
+        }
+        .container::-webkit-scrollbar-track {
+            background: #f1f3f5; 
+            border-radius: 4px;
+        }
+        .container::-webkit-scrollbar-thumb {
+            background: #cbd5e1; 
+            border-radius: 4px;
+        }
+        .container::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8; 
+        }
+
+        h1 {
+            font-size: 26px;
+            font-weight: 700;
+            margin-top: 0;
+            margin-bottom: 8px;
+            color: #212529;
+        }
+
+        .description {
+            font-size: 15px;
+            color: var(--text-secondary);
+            margin-bottom: 24px;
+        }
+
+        /* Панель */
+        .panel {
+            background: linear-gradient(45deg, #8dc7ff, #8ed4ff, #a4d8ff, #c0d3ff, #dfc5fc);
+            padding: 16px;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow-soft);
+            margin-bottom: 24px;
+        }
+
+        .panel-inner {
+            background-color: var(--surface-card);
+            border-radius: 6px;
+            padding: 16px;
+        }
+
+        /* Таблица */
+        .table-wrapper {
+            background: var(--surface-card);
+            border-radius: var(--border-radius);
+            border: 1px solid var(--border-color);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+            table-layout: auto;
+        }
+
+        th, td {
+            padding: 12px 14px;
+            border-bottom: 1px solid var(--border-color);
+            word-break: normal;
+            overflow-wrap: break-word;
+        }
+
+        th {
+            background-color: #f1f3f5;
+            font-weight: 700;
+            font-size: 13px;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+        }
+
+        .stage-row td {
+            background-color: #e9ecef;
+            font-weight: 700;
+            color: var(--primary-dark);
+            font-size: 14px;
+            padding: 10px 14px;
+            border-bottom: 2px solid var(--border-color);
+            text-transform: uppercase;
+        }
+
+        /* Поля ввода */
+        select, input[type="date"] {
+            width: 100%;
+            padding: 8px 10px;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            font-family: var(--font-main);
+            font-size: 14px;
+            color: var(--text-main);
+            background-color: #fff;
+            outline: none;
+            transition: border-color 0.2s ease;
+        }
+
+        select:focus, input[type="date"]:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(33, 150, 243, 0.15);
+        }
+
+        input[type="date"]:disabled {
+            background-color: #f1f3f5;
+            color: #adb5bd;
+            cursor: not-allowed;
+            border-color: #e9ecef;
+        }
+
+        /* Кнопки */
+        .action-container {
+            margin-top: 24px;
+            display: none;
+            justify-content: center;
+        }
+
+        .btn {
+            background-image: linear-gradient(to right, var(--gradient-start), var(--gradient-end) 51%, var(--gradient-start));
+            background-size: 200% auto;
+            color: #fff;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 8px;
+            font-size: 15px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: 0.4s;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-family: var(--font-main);
+            text-transform: uppercase;
+        }
+
+        .btn:hover {
+            background-position: right center;
+            transform: translateY(-1px);
+        }
+
+        .btn-outline {
+            background: transparent;
+            color: var(--primary);
+            border: 2px solid var(--primary);
+            background-image: none;
+            margin-top: 16px;
+        }
+
+        .btn-outline:hover {
+            background-color: rgba(33, 150, 243, 0.05);
+        }
+
+        /* Результат */
+        #result-container {
+            display: none;
+            background: var(--surface-card);
+            border-radius: var(--border-radius);
+            padding: 20px;
+            border: 1px solid var(--border-color);
+            animation: fadeIn 0.4s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .result-title {
+            font-size: 20px;
+            font-weight: 700;
+            margin-top: 0;
+            margin-bottom: 20px;
+            color: #212529;
+            border-bottom: 2px solid var(--primary);
+            display: inline-block;
+            padding-bottom: 6px;
+        }
+
+        .result-list {
+            list-style-type: none;
+            padding: 0;
+            margin: 0 0 24px 0;
+        }
+
+        .result-item {
+            padding: 12px 0;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .result-item:last-child {
+            border-bottom: none;
+        }
+
+        .result-item-title {
+            font-weight: 700;
+            font-size: 15px;
+        }
+
+        .result-item-meta {
+            font-size: 13px;
+            color: var(--text-secondary);
+            display: flex;
+            gap: 12px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .badge {
+            padding: 3px 8px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 700;
+        }
+
+        .badge-process {
+            background-color: #fff3cd;
+            color: #856404;
+        }
+
+        .badge-no {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+
+        .result-actions {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        @media (max-width: 600px) {
+            .container { padding: 16px; height: 90vh; }
+            .panel { padding: 10px; }
+            .panel-inner { padding: 10px; }
+            .result-actions { flex-direction: column; }
+            .btn { width: 100%; padding: 12px 16px; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container" id="main-container">
+    <h1>Планировщик внедрения барьерной защиты</h1>
+    <p class="description">Отметьте в чек-листе, что уже сделали, а что еще предстоит выполнить по плану. Установите срок и получите готовую карту проекта по шагам.</p>
+
+    <div class="panel" id="main-panel">
+        <div class="panel-inner">
+            <div class="table-wrapper" id="table-wrapper">
+                <table>
+                    <thead>
+                        <tr>
+                            <th style="width: 55%;">Шаг</th>
+                            <th style="width: 20%;">Выполнено</th>
+                            <th style="width: 25%;">Срок</th>
+                        </tr>
+                    </thead>
+                    <tbody id="checklist-body">
+                        <!-- Заполняется через JS -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div class="action-container" id="action-container">
+        <button class="btn" id="generate-btn">Сформировать чек-лист</button>
+    </div>
+
+    <div id="result-container">
+        <h2 class="result-title">Ваш чек-лист задач</h2>
+        <ul class="result-list" id="result-list">
+            <!-- Результат заполняется через JS -->
+        </ul>
+        
+        <div class="result-actions">
+            <button class="btn" id="download-btn">Скачать</button>
+            <button class="btn btn-outline" id="reset-btn">Начать сначала</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    const checklistData = [
+        {
+            stage: "ЭТАП 1. Подготовка и запуск проекта",
+            tasks: [
+                "Получить согласие руководства",
+                "Определить один участок или цех, где будете внедрять методику впервые",
+                "Сформировать рабочую группу. Назначить: модератора, технолога, мастера участка, механика/энергетика, экономиста для расчетов",
+                "Обучить команду методу «Галстук-бабочка»"
+            ]
+        },
+        {
+            stage: "ЭТАП 2. Анализ рисков и проектирование защиты",
+            tasks: [
+                "Выделить критические события",
+                "Построить диаграммы с помощью метода «Галстук-бабочка». Для каждого события определить угрозы, последствия и факторы эскалации",
+                "Провести ревизию текущих барьеров. Задать 4 вопроса к каждому существующему барьеру: Существует? Работает? Надежен? Кто отвечает?",
+                "Зафиксировать барьеры, которые отсутствуют, не проверяются или не имеют владельца",
+                "Подобрать новые барьеры по принципу ALARP. Сформировать перечень защит с обоснованием: почему выбран этот вариант (технический/организационный) и почему затраты соразмерны риску",
+                "Определить критерии работоспособности. Для каждого барьера прописать: как физически проверить, что он работает"
+            ]
+        },
+        {
+            stage: "ЭТАП 3. Закрепление ответственности и документации",
+            tasks: [
+                "Назначить владельцев барьеров",
+                "Издать приказ, в котором у каждого барьера есть конкретный человек",
+                "Обновить должностные инструкции: внести обязанности, как часто проверять барьер, куда сообщать при отказе",
+                "Разработать «Положение о барьерной защите» или аналогичный документ, закрепляющий процедуры",
+                "Создать паспорта рисков и барьеров. Оформить краткие карточки на каждый критический риск для руководства и мастеров",
+                "Обновить реестр рисков"
+            ]
+        },
+        {
+            stage: "ЭТАП 4. Визуализация и физическая реализация",
+            tasks: [
+                "Создать карту «Смертельные зоны и барьеры». На схеме участка красным выделить опасные зоны, символами нанести барьеры",
+                "Подписать карту рабочими",
+                "Закупить и смонтировать новые барьеры",
+                "Вывесить визуальные материалы. Карты и паспорта барьеров разместить на самом участке в зоне видимости смены"
+            ]
+        },
+        {
+            stage: "ЭТАП 5. Интеграция в производственную рутину",
+            tasks: [
+                "Внедрить трехцветную систему статуса барьеров: зеленый цвет - исправны, желтый - ограничено, красный - остановка",
+                "Изменить формат проверок. Аудиты-рейды заменить на «Обходы-диалоги»",
+                "Внедрить «стоп-фактор» в наряд-допуск. Пункт «Критические риски и барьеры участка» поставить первым в наряде-допуске на ремонтные работы",
+                "Провести обучение линейных руководителей"
+            ]
+        },
+        {
+            stage: "ЭТАП 6. Мониторинг и оценка эффективности",
+            tasks: [
+                "Настроить дашборд барьеров. Создать собственную систему для отслеживания статуса барьеров, просроченных проверок и времени реакции на эскалацию",
+                "Отслеживать метрики: % выполненных проверок, количество выявленных отказов до наступления аварии, время закрытия отклонений",
+                "Провести первый анализ результатов. Через месяц после запуска оценить: какие практики приживаются, а какие саботируются",
+                "Ввести практику публичного признания тех, кто выявил и предотвратил отказ критического барьера",
+                "Принять решение о масштабировании. Оценить готовность к тиражированию методики на следующие цеха и участки"
+            ]
+        }
+    ];
+
+    const mainContainer = document.getElementById('main-container');
+    const tbody = document.getElementById('checklist-body');
+    const actionContainer = document.getElementById('action-container');
+    const generateBtn = document.getElementById('generate-btn');
+    const mainPanel = document.getElementById('main-panel');
+    const resultContainer = document.getElementById('result-container');
+    const resultList = document.getElementById('result-list');
+    const resetBtn = document.getElementById('reset-btn');
+    const downloadBtn = document.getElementById('download-btn');
+
+    let generatedData = [];
+
+    function initTable() {
+        tbody.innerHTML = '';
+        let taskIndex = 0;
+
+        checklistData.forEach(stage => {
+            const stageRow = document.createElement('tr');
+            stageRow.className = 'stage-row';
+            stageRow.innerHTML = `<td colspan="3">${stage.stage}</td>`;
+            tbody.appendChild(stageRow);
+
+            stage.tasks.forEach(task => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${task}</td>
+                    <td>
+                        <select class="status-select" data-index="${taskIndex}">
+                            <option value="" disabled selected>Выберите...</option>
+                            <option value="да">Да</option>
+                            <option value="нет">Нет</option>
+                            <option value="в процессе">В процессе</option>
+                            <option value="не актуально">Не актуально</option>
+                        </select>
+                    </td>
+                    <td>
+                        <input type="date" class="date-input" data-index="${taskIndex}" disabled>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+                taskIndex++;
+            });
+        });
+
+        document.querySelectorAll('.status-select').forEach(select => {
+            select.addEventListener('change', handleStatusChange);
+        });
+    }
+
+    function handleStatusChange(e) {
+        const select = e.target;
+        const index = select.getAttribute('data-index');
+        const dateInput = document.querySelector(`.date-input[data-index="${index}"]`);
+
+        if (select.value === 'нет' || select.value === 'в процессе') {
+            dateInput.disabled = false;
+            dateInput.required = true;
+        } else {
+            dateInput.disabled = true;
+            dateInput.required = false;
+            dateInput.value = '';
+        }
+
+        checkAllFilled();
+    }
+
+    function checkAllFilled() {
+        const selects = document.querySelectorAll('.status-select');
+        let allFilled = true;
+
+        selects.forEach(select => {
+            if (select.value === '') {
+                allFilled = false;
+            }
+        });
+
+        actionContainer.style.display = allFilled ? 'flex' : 'none';
+    }
+
+    generateBtn.addEventListener('click', () => {
+        generatedData = [];
+        
+        document.querySelectorAll('.stage-row').forEach(stageRow => {
+            let nextRow = stageRow.nextElementSibling;
+
+            while (nextRow && !nextRow.classList.contains('stage-row')) {
+                const select = nextRow.querySelector('.status-select');
+                const dateInput = nextRow.querySelector('.date-input');
+                const taskText = nextRow.querySelector('td').textContent;
+
+                if (select.value === 'нет' || select.value === 'в процессе') {
+                    generatedData.push({
+                        text: taskText,
+                        status: select.value,
+                        date: dateInput.value
+                    });
+                }
+                nextRow = nextRow.nextElementSibling;
+            }
+        });
+
+        renderResult();
+    });
+
+    function renderResult() {
+        resultList.innerHTML = '';
+        
+        if (generatedData.length === 0) {
+            resultList.innerHTML = `<li class="result-item"><span class="result-item-title">Все пункты выполнены или не актуальны. Отличная работа!</span></li>`;
+        } else {
+            generatedData.forEach(item => {
+                const formattedDate = item.date ? new Date(item.date).toLocaleDateString('ru-RU') : 'Срок не указан';
+                const badgeClass = item.status === 'в процессе' ? 'badge-process' : 'badge-no';
+                
+                const li = document.createElement('li');
+                li.className = 'result-item';
+                li.innerHTML = `
+                    <span class="result-item-title">${item.text}</span>
+                    <div class="result-item-meta">
+                        <span class="badge ${badgeClass}">${item.status.toUpperCase()}</span>
+                        <span>📅 Срок: ${formattedDate}</span>
+                    </div>
+                `;
+                resultList.appendChild(li);
+            });
+        }
+
+        mainPanel.style.display = 'none';
+        actionContainer.style.display = 'none';
+        resultContainer.style.display = 'block';
+        
+        // Прокрутка самого контейнера вверх
+        mainContainer.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    downloadBtn.addEventListener('click', () => {
+        let tableRows = '';
+        if (generatedData.length === 0) {
+            tableRows = `<tr><td colspan="2" style="text-align:center; padding:20px;">Все пункты выполнены или не актуальны</td></tr>`;
+        } else {
+            generatedData.forEach(item => {
+                const formattedDate = item.date ? new Date(item.date).toLocaleDateString('ru-RU') : '—';
+                tableRows += `<tr><td style="border:1px solid #ccc; padding:8px;">${item.text}</td><td style="border:1px solid #ccc; padding:8px; white-space:nowrap;">${formattedDate}</td></tr>`;
+            });
+        }
+
+        const htmlContent = `
+            <html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'>
+            <head>
+                <meta charset="utf-8">
+                <title>План внедрения барьерной защиты</title>
+                <style>
+                    body { font-family: 'PT Sans', Arial, sans-serif; margin: 20px; }
+                    h1 { font-size: 22px; color: #212529; border-bottom: 2px solid #2196F3; padding-bottom: 6px; }
+                    table { border-collapse: collapse; width: 100%; margin-top: 16px; }
+                    th { background-color: #f1f3f5; font-weight: bold; border: 1px solid #ccc; padding: 10px; text-align: left; }
+                    td { border: 1px solid #ccc; padding: 8px; }
+                </style>
+            </head>
+            <body>
+                <h1>План внедрения барьерной защиты</h1>
+                <table>
+                    <thead>
+                        <tr>
+                            <th style="width: 75%;">Шаг</th>
+                            <th style="width: 25%;">Срок</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${tableRows}
+                    </tbody>
+                </table>
+            </body>
+            </html>
+        `;
+
+        const blob = new Blob([htmlContent], { type: 'application/msword' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'План_барьерной_защиты.doc';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+    });
+
+    resetBtn.addEventListener('click', () => {
+        document.querySelectorAll('.status-select').forEach(select => {
+            select.value = '';
+        });
+        document.querySelectorAll('.date-input').forEach(input => {
+            input.value = '';
+            input.disabled = true;
+            input.required = false;
+        });
+
+        resultContainer.style.display = 'none';
+        mainPanel.style.display = 'block';
+        actionContainer.style.display = 'none';
+        generatedData = [];
+        
+        mainContainer.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+
+    initTable();
+</script>
+</body>
+</html>
